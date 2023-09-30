@@ -18,31 +18,20 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-                async function run() {
-                  
-                  try {
-                  const { data: issue } = await github.rest.issues.get({
-                    issue_number: context.issue.number,
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                  });
-                  
-                  const issueTitle = issue.title;
-                  const hasHighOrCriticalTag = /\[(High|Critical)\]/i.test(issueTitle);
-                  
-                  if (issue.state === 'open') {
-                    core.setFailed('Pull request cannot be merged because the associated issue is still open.');
-                  } else {
-                    const issueTitle = issue.title;
-                    const hasHighOrCriticalTag = /\[(High|Critical)\]/i.test(issueTitle);
-                    if (hasHighOrCriticalTag) {
-                      core.setFailed('Pull request cannot be merged because it has vulnerabilities in GitHub issues.');
-                    }
-                    }
+                const { data: issues } = await github.rest.issues.listForRepo({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  state: 'open', // Filtrar apenas as issues abertas.
+                });
 
-                } catch (error) {
-                  core.setFailed(`Error fetching issue details: ${error.message}`);
-                run();
+                const hasHighOrCriticalIssue = issues.some((issue) => {
+                  const issueTitle = issue.title;
+                  return /\[(High|Critical)\]/i.test(issueTitle);
+                });
+
+                if (hasHighOrCriticalIssue) {
+                  core.setFailed('Pull request cannot be merged because there are open issues with [High] or [Critical] tags in the repository.');
+                }
 
       - name: Merge Pull Request
         id: merge_pr
