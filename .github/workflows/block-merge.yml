@@ -20,7 +20,7 @@ jobs:
           script: |
             
             async function run() {
-              const issueNumber = github.context.payload.pull_request.number;
+              const issueNumber = github.context.issue.number;
               const owner = github.context.repo.owner;
               const repo = github.context.repo.repo;
               
