@@ -22,15 +22,25 @@ jobs:
             const core = require('@actions/core');
             
             async function run() {
-              const issue = await github.issues.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.payload.pull_request.number
-              });
-              const issueTitle = issue.data.title;
-              const hasHighOrCriticalTag = /\[(High|Critical)\]/i.test(issueTitle);
-              if (hasHighOrCriticalTag) {
-                core.setFailed('Pull request cannot be merged because it has vulnerabilities in GitHub issues.');
+              const issueNumber = github.context.payload.pull_request.number;
+              const owner = github.context.repo.owner;
+              const repo = github.context.repo.repo;
+              
+              try {
+                const { data: issue } = await github.rest.issues.get({
+                  owner,
+                  repo,
+                  issue_number: issueNumber
+                });
+                
+                const issueTitle = issue.title;
+                const hasHighOrCriticalTag = /\[(High|Critical)\]/i.test(issueTitle);
+                
+                if (hasHighOrCriticalTag) {
+                  core.setFailed('Pull request cannot be merged because it has vulnerabilities in GitHub issues.');
+                }
+              } catch (error) {
+                core.setFailed(`Error fetching issue details: ${error.message}`);
               }
             }
             
