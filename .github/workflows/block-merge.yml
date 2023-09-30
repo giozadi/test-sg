@@ -27,7 +27,7 @@ jobs:
                 const issueTitle = issue.title;
                 const hasHighOrCriticalTag = /\[(High|Critical)\]/i.test(issueTitle);
                 
-                if (hasHighOrCriticalTag) {
+                if (!hasHighOrCriticalTag) {
                   core.setFailed('Pull request cannot be merged because it has vulnerabilities in GitHub issues.');
                 }
 
