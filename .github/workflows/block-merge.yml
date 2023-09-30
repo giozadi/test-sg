@@ -1,0 +1,33 @@
+name: Block Merge on High or Critical Issues
+on:
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  block_merge:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check Issue Tags
+        id: check_issue_tags
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issue = await github.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number
+            });
+            const issueTitle = issue.data.title;
+            const hasHighOrCriticalTag = /\[(High|Critical)\]/i.test(issueTitle);
+            if (hasHighOrCriticalTag) {
+              core.setFailed('Pull request cannot be merged bcz has vulnerabilities on github issues');
+            }
+
+      - name: Merge Pull Request
+        id: merge_pr
+        run: echo "Pull request can be merged now."
