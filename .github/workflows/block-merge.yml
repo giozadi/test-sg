@@ -18,7 +18,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const github = require('@actions/github');
             
             async function run() {
               const issueNumber = github.context.payload.pull_request.number;
