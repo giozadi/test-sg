@@ -18,18 +18,31 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-                const { data: issue } = await github.rest.issues.get({
-                  issue_number: context.issue.number,
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                });
-                
-                const issueTitle = issue.title;
-                const hasHighOrCriticalTag = /\[(High|Critical)\]/i.test(issueTitle);
-                
-                if (hasHighOrCriticalTag && issue.state === 'open') {
-                  core.setFailed('Pull request cannot be merged because it has vulnerabilities in GitHub issues.');
-                }
+                async function run() {
+                  
+                  try {
+                  const { data: issue } = await github.rest.issues.get({
+                    issue_number: context.issue.number,
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                  });
+                  
+                  const issueTitle = issue.title;
+                  const hasHighOrCriticalTag = /\[(High|Critical)\]/i.test(issueTitle);
+                  
+                  if (issue.state === 'open') {
+                    core.setFailed('Pull request cannot be merged because the associated issue is still open.');
+                  } else {
+                    const issueTitle = issue.title;
+                    const hasHighOrCriticalTag = /\[(High|Critical)\]/i.test(issueTitle);
+                    if (hasHighOrCriticalTag) {
+                      core.setFailed('Pull request cannot be merged because it has vulnerabilities in GitHub issues.');
+                    }
+                    }
+
+                } catch (error) {
+                  core.setFailed(`Error fetching issue details: ${error.message}`);
+                run();
 
       - name: Merge Pull Request
         id: merge_pr
