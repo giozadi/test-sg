@@ -18,9 +18,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            
-            async function run() {    
-              try {
                 const { data: issue } = await github.rest.issues.get({
                   issue_number: context.issue.number,
                   owner: context.repo.owner,
@@ -33,12 +30,6 @@ jobs:
                 if (hasHighOrCriticalTag) {
                   core.setFailed('Pull request cannot be merged because it has vulnerabilities in GitHub issues.');
                 }
-              } catch (error) {
-                core.setFailed(`Error fetching issue details: ${error.message}`);
-              }
-            }
-            
-            run();
 
       - name: Merge Pull Request
         id: merge_pr
