@@ -1,4 +1,5 @@
-    "name": "test-new-sca",
+{
+"name": "test-new-sca",
     "version": "0.0.1",
     "private": true,
     "scripts": {},
